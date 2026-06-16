@@ -151,9 +151,22 @@ def requires_llm_at_score_time(metric_name: str) -> bool:
 def requires_args_from_placeholders(metric_name: str) -> bool:
     return _get_config(metric_name).requires_args_from_placeholders
 
-
 def _get_config(metric_name: str) -> MetricConfig:
+    """
+    Get metric configuration by name.
+
+    Handles aliases where the MLflow wrapper name differs from
+    the underlying RAGAS class name.
+    """
+
+    aliases = {
+        "ChrfScore": "CHRFScore",
+    }
+
+    metric_name = aliases.get(metric_name, metric_name)
+
     if metric_name in _METRIC_REGISTRY:
         return _METRIC_REGISTRY[metric_name]
+
     # Return default config for unknown metrics - dynamic import will be attempted
     return MetricConfig(f"ragas.metrics.collections.{metric_name}")
